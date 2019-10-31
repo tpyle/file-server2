@@ -3,7 +3,7 @@ const BodyParser = require('body-parser');
 const CookieParser = require('cookie-parser');
 const path = require('path');
 const router = require('./api');
-const config = require('./config')({ defaultConfig: { port: 3002 } })
+const config = require('./config')({ defaultConfig: { port: 5000 } })
 
 let app = express();
 
