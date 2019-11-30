@@ -1,0 +1,36 @@
+<!doctype html>
+<html>
+    <head>
+        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+        <title>{{ current_dir }}</title>
+    </head>
+    <body>
+        <header>
+            <nav class="navbar navbar-expand-lg navbar-light bg-light">
+                <a class="navbar-brand" href="/">FSV</a>
+            </nav>
+        </header>
+        <main class="container mt-2">
+             <nav aria-label="breadcrumb">
+                <ol class="breadcrumb">
+                    {% for path in paths %}
+                    {% if path.link %}
+                    <a class="breadcrumb-item" aria-current="page" href="{{ path.link }}">{{ path.name }}</a>
+                    {% else %}
+                    <li class="breadcrumb-item" aria-current="page">{{ path.name }}</li>
+                    {% endif %}
+                    {% endfor %}
+                    <li class="breadcrumb-item active" aria-current="page">{{ current_dir }}</li>
+                </ol>
+            </nav>
+            <div class="list-group">
+                {% for dir in dirs %}
+                <a href="./{{ dir }}/" class="list-group-item list-group-item-action text-white bg-success">{{ dir }}</a>
+                {% endfor %}
+                {% for file in files %}
+                <a download href="./{{ file }}" class="list-group-item list-group-item-action">{{ file }}</a>
+                {% endfor %}
+            </div>
+        </main>
+    </body>
+</html>
