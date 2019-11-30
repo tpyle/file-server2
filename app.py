@@ -1,5 +1,7 @@
 from flask import Flask, request, redirect, render_template, abort, send_file
+from werkzeug import secure_filename
 import os
+import uuid
 import json
 import tempfile
 
@@ -9,6 +11,12 @@ try:
 except:
     print("FAILED TO LOAD CONFIG")
     config = dict()
+
+def get_base_dir(user):
+    dirname = config.get("BASE_DIR",os.path.join(tempfile.gettempdir(),"fsv"))
+    dirname = os.path.join(dirname,user)
+    os.makedirs(dirname,exist_ok=True)
+    return dirname
 
 app = Flask(__name__)
 
@@ -29,7 +37,7 @@ def get_list(path):
             print("NO SID")
         else:
             print(SID)
-    base_dir = config.get("BASE_DIR",os.path.join(tempfile.gettempdir(),"fsv"))
+    base_dir = get_base_dir(username)
     
     # Next, figure out whether they're in a directory or getting a file
     paths = path.split('/')
@@ -43,8 +51,8 @@ def get_list(path):
 
         files = []
         dirs = []
-        for filename in os.listdir(os.path.join(base_dir, username, path)):
-            if os.path.isdir(os.path.join(base_dir, username, path, filename)):
+        for filename in os.listdir(os.path.join(base_dir, path)):
+            if os.path.isdir(os.path.join(base_dir, path, filename)):
                 dirs.append(filename)
             else:
                 files.append(filename)
@@ -65,10 +73,10 @@ def get_list(path):
                 opaths.append({ "name": path, "link": "/" })
             else:
                 opaths.append({ "name": path })
-        return render_template("file-list.html", current_dir=current_dir, dirs=dirs, files=files, paths=opaths)
+        return render_template("file-list.html", args=request.args, current_dir=current_dir, dirs=dirs, files=files, paths=opaths)
     else:
         # Otherwise, send them the file
-        fqp = os.path.join(base_dir, username, path)
+        fqp = os.path.join(base_dir, path)
         if os.path.isfile(fqp):
             return send_file(fqp)
         return abort(404)
@@ -76,5 +84,25 @@ def get_list(path):
 @app.route('/', defaults={'path': ''}, methods=["POST"])
 @app.route('/<path:path>/', methods=["POST"])
 def modify_directory(path):
-    print(request.form)
-    return path
+    # Validate the user (and get their username)
+    SID = request.cookies.get("SID","")
+    username = "user"
+    if "AUTH_URL" in config and config["AUTH_URL"]:
+        if SID == "":
+            print("NO SID")
+        else:
+            print(SID)
+    base_dir = get_base_dir(username)
+
+    renamed = False
+    for f in request.files.to_dict(flat=False)['files']:
+        name = secure_filename(f.filename)
+        if name == "":
+            name = str(uuid.uuid4())
+            renamed = True
+        if os.path.exists(os.path.join(base_dir,name)):
+            ext = name[name.rfind('.'):] if name.rfind('.') else ""
+            name = str(uuid.uuid4()) + ext
+            renamed = True
+        f.save(os.path.join(base_dir,name))
+    return redirect("/" + path + ("?renamed=1" if renamed else ""),code=303)

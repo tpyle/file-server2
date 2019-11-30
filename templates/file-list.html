@@ -31,6 +31,15 @@
                 <a download href="./{{ file }}" class="list-group-item list-group-item-action">{{ file }}</a>
                 {% endfor %}
             </div>
+            {% if args.renamed == "1" %}
+            <div class="mt-2 alert alert-warning" role="alert">
+                Some of the files you uploaded had to be renamed. Sorry!
+            </div>
+            {% endif %}
+            <form method="POST" action="." class="mt-2 rounded border p-3" enctype="multipart/form-data">
+                <input type="file" multiple class="form-control-file mb-2" name="files" />
+                <button class="btn btn-primary">Upload</button>
+            </form>
         </main>
     </body>
 </html>
