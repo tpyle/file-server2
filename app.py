@@ -100,9 +100,11 @@ def modify_directory(path):
         if name == "":
             name = str(uuid.uuid4())
             renamed = True
-        if os.path.exists(os.path.join(base_dir,name)):
+        if os.path.exists(os.path.join(base_dir,path,name)):
             ext = name[name.rfind('.'):] if name.rfind('.') else ""
             name = str(uuid.uuid4()) + ext
             renamed = True
-        f.save(os.path.join(base_dir,name))
+        f.save(os.path.join(base_dir,path,name))
+    if path != "" and path[-1] != "/":
+        path = path + "/"
     return redirect("/" + path + ("?renamed=1" if renamed else ""),code=303)
