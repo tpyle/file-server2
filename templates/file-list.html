@@ -23,6 +23,16 @@
                     <li class="breadcrumb-item active" aria-current="page">{{ current_dir }}</li>
                 </ol>
             </nav>
+            <div class="">
+                <form class="" method="POST" action="./mkdir">
+                    <div class="input-group mb-2">
+                        <input type="text" class="form-control" name="dirname" placeholder="Directory" maxlength="30" pattern="[a-zA-Z0-9\.\-]+" />
+                        <div class="input-group-append">
+                            <button class="btn btn-primary">Create</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
             <div class="list-group">
                 {% for dir in dirs %}
                 <a href="./{{ dir }}/" class="list-group-item list-group-item-action text-white bg-success">{{ dir }}</a>

@@ -1,5 +1,7 @@
 from flask import Flask, request, redirect, render_template, abort, send_file
 from werkzeug import secure_filename
+from pathlib import Path
+
 import os
 import uuid
 import json
@@ -70,7 +72,7 @@ def get_list(path):
             if path not in ["","..."]:
                 opaths.append({ "name": path, "link": "../" * (len(paths[:-2])-i) })
             elif path == "root":
-                opaths.append({ "name": path, "link": "/" })
+                paths.append({ "name": path, "link": "/" })
             else:
                 opaths.append({ "name": path })
         return render_template("file-list.html", args=request.args, current_dir=current_dir, dirs=dirs, files=files, paths=opaths)
@@ -80,6 +82,24 @@ def get_list(path):
         if os.path.isfile(fqp):
             return send_file(fqp)
         return abort(404)
+
+@app.route('/mkdir', defaults={'path': ''}, methods=["POST"])
+@app.route('/<path:path>/mkdir', methods=["POST"])
+def create_directory(path):
+    SID = request.cookies.get("SID","")
+    username = "user"
+    if "AUTH_URL" in config and config["AUTH_URL"]:
+        if SID == "":
+            print("NO SID")
+        else:
+            print(SID)
+    base_dir = get_base_dir(username)
+
+    directory = os.path.join(base_dir,path,secure_filename(request.form.to_dict()["dirname"]))
+    Path(directory).mkdir(parents=True, exist_ok=True)
+    if path:
+        path += "/"
+    return redirect("/" + path, code=303)
 
 @app.route('/', defaults={'path': ''}, methods=["POST"])
 @app.route('/<path:path>/', methods=["POST"])
